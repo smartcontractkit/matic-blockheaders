@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
-	"crypto/rand"
 	"encoding/hex"
 	"fmt"
 	"log"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -21,20 +21,18 @@ func main() {
 	latestBlockHeader, err := client.HeaderByNumber(context.Background(), nil) // most recent block
 	printBlockRLP(latestBlockHeader)
 
-	noTestCases := 10
-	maxBlockNum := latestBlockHeader.Number
-
+	noTestCases := 5
+	blockNum := big.NewInt(10000467)
 	for i := 0; i < noTestCases; i++ {
-		// Generate cryptographically strong pseudo-random between 0 - max
-		n, err := rand.Int(rand.Reader, maxBlockNum)
 		if err != nil {
 			log.Fatal((err))
 		}
-		header, err := client.HeaderByNumber(context.Background(), n)
+		header, err := client.HeaderByNumber(context.Background(), blockNum)
 		if err != nil {
 			log.Fatal(err)
 		}
 		printBlockRLP(header)
+		blockNum.Add(blockNum, big.NewInt(1))
 	}
 }
 
@@ -45,5 +43,6 @@ func printBlockRLP(header *types.Header) {
 	}
 	output := hex.EncodeToString(data)
 	fmt.Printf("Block Number: %v\n", header.Number)
+	fmt.Printf("Parent hash: %v\n", header.ParentHash.Hex())
 	fmt.Printf("0x%s\n\n", output)
 }
